@@ -1,1 +1,7 @@
 project_id = "rvfiesexczfxqhtoymqa"
+
+[functions.get-recommendations]
+verify_jwt = false
+
+[functions.track-behavior]
+verify_jwt = false

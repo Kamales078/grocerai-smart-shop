@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
+import { useBehaviorTracking } from '@/hooks/useBehaviorTracking';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart } from 'lucide-react';
@@ -10,9 +12,41 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
+  const { trackView, trackAddToCart } = useBehaviorTracking();
+  const hasTrackedView = useRef(false);
+
+  // Track product view when card enters viewport
+  useEffect(() => {
+    if (hasTrackedView.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasTrackedView.current) {
+            hasTrackedView.current = true;
+            trackView(product);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    const element = document.getElementById(`product-card-${product.id}`);
+    if (element) observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [product, trackView]);
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    trackAddToCart(product, 1);
+  };
 
   return (
-    <div className="card-elevated overflow-hidden group animate-fade-in">
+    <div 
+      id={`product-card-${product.id}`}
+      className="card-elevated overflow-hidden group animate-fade-in"
+    >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img
           src={product.image}
@@ -49,7 +83,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
         <Button
-          onClick={() => addToCart(product)}
+          onClick={handleAddToCart}
           className="w-full"
           size="sm"
         >

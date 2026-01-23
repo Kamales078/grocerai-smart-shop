@@ -3,6 +3,7 @@ import { products, categories } from '@/data/products';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { CartSheet } from '@/components/shop/CartSheet';
 import { AIAssistant } from '@/components/shop/AIAssistant';
+import { RecommendedProducts } from '@/components/shop/RecommendedProducts';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,6 @@ import {
   Package,
   Tag,
   ChevronRight,
-  User,
   Bell
 } from 'lucide-react';
 
@@ -173,10 +173,16 @@ export default function Shop() {
           </div>
         </header>
 
-        {/* Product Grid */}
-        <div className="flex-1 p-4">
+        {/* Main Content */}
+        <div className="flex-1 p-4 space-y-8">
+          {/* AI Recommendations Section */}
+          <RecommendedProducts />
+
+          {/* Divider */}
+          <div className="border-t" />
+
           {/* Section Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold">
                 {selectedCategory === 'All' ? 'All Products' : selectedCategory}
@@ -191,6 +197,7 @@ export default function Shop() {
             </div>
           </div>
 
+          {/* Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredProducts.map(product => (
               <ProductCard key={product.id} product={product} />

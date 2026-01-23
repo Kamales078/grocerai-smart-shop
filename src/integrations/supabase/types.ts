@@ -14,7 +14,186 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      popular_products: {
+        Row: {
+          cart_add_count: number | null
+          id: string
+          popularity_score: number | null
+          product_id: string
+          purchase_count: number | null
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          cart_add_count?: number | null
+          id?: string
+          popularity_score?: number | null
+          product_id: string
+          purchase_count?: number | null
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          cart_add_count?: number | null
+          id?: string
+          popularity_score?: number | null
+          product_id?: string
+          purchase_count?: number | null
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      product_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          preferences: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_browsing_history: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          last_viewed_at: string
+          product_id: string
+          product_name: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          last_viewed_at?: string
+          product_id: string
+          product_name: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          last_viewed_at?: string
+          product_id?: string
+          product_name?: string
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      user_cart_history: {
+        Row: {
+          action: string
+          category: string
+          created_at: string
+          id: string
+          product_id: string
+          product_name: string
+          quantity: number | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          category: string
+          created_at?: string
+          id?: string
+          product_id: string
+          product_name: string
+          quantity?: number | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          category?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          product_name?: string
+          quantity?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_purchases: {
+        Row: {
+          category: string
+          id: string
+          price: number
+          product_id: string
+          product_name: string
+          purchased_at: string
+          quantity: number | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          id?: string
+          price: number
+          product_id: string
+          product_name: string
+          purchased_at?: string
+          quantity?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          id?: string
+          price?: number
+          product_id?: string
+          product_name?: string
+          purchased_at?: string
+          quantity?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
