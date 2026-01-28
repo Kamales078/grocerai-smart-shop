@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CheckCircle, CreditCard, Wallet, Banknote, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Checkout() {
   const { items, total, clearCart } = useCart();
@@ -12,11 +14,47 @@ export default function Checkout() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const trackPurchases = async () => {
+    if (!user) return;
+    
+    try {
+      const purchases = items.map(item => ({
+        user_id: user.id,
+        product_id: item.product.id,
+        product_name: item.product.name,
+        category: item.product.category,
+        quantity: item.quantity,
+        price: item.product.price,
+      }));
+
+      await supabase.from('user_purchases').insert(purchases);
+
+      // Also track as cart purchase action
+      const cartActions = items.map(item => ({
+        user_id: user.id,
+        product_id: item.product.id,
+        product_name: item.product.name,
+        category: item.product.category,
+        action: 'purchased',
+        quantity: item.quantity,
+      }));
+
+      await supabase.from('user_cart_history').insert(cartActions);
+    } catch (error) {
+      console.error('Failed to track purchases:', error);
+    }
+  };
 
   const handlePayment = async () => {
     setIsProcessing(true);
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Track purchases for recommendations
+    await trackPurchases();
+    
     setIsProcessing(false);
     setIsComplete(true);
     clearCart();

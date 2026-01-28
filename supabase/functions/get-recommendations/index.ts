@@ -103,47 +103,66 @@ serve(async (req) => {
                         userBehavior.cartHistory.length > 0 || 
                         userBehavior.purchases.length > 0;
 
-    const systemPrompt = `You are an AI grocery recommendation engine. Analyze user behavior and product catalog to provide personalized recommendations.
+    const systemPrompt = `You are an AI grocery recommendation engine. Analyze user ORDER HISTORY as the PRIMARY signal for recommendations.
 
-Your task is to recommend 6 products using a hybrid approach:
-1. COLLABORATIVE FILTERING: Products liked by similar users based on browsing/purchase patterns
-2. CONTENT-BASED FILTERING: Products similar to what the user has shown interest in (same category, price range, attributes)
-3. POPULARITY-BASED: For new users or as supplementary recommendations
+PRIORITY ORDER FOR RECOMMENDATIONS (most important first):
+1. **ORDER HISTORY (70% weight)**: Products the user has PURCHASED before - recommend similar items, replenishment items, and complementary products
+2. **CONTENT-BASED (20% weight)**: Products in same categories as their orders
+3. **POPULARITY-BASED (10% weight)**: Only as fallback for new users
+
+RECOMMENDATION LOGIC:
+- If user ordered bananas frequently → recommend other fruits, breakfast items
+- If user ordered dairy products → recommend cheese, yogurt, milk alternatives  
+- If user ordered organic items → prioritize organic products
+- Predict REPLENISHMENT needs based on order frequency and typical consumption
+- Suggest COMPLEMENTARY products that go well with their orders
 
 For each recommendation, provide:
 - product_id: The exact ID from the catalog
-- confidence_score: 0.0 to 1.0 indicating match strength
-- reasoning: Brief explanation of WHY this product is recommended (for Explainable AI)
+- confidence_score: 0.0 to 1.0 (higher for products matching order patterns)
+- reasoning: Explain connection to their ORDER HISTORY specifically
 - recommendation_type: "collaborative" | "content_based" | "popularity" | "trending"`;
 
+    // Analyze purchase patterns
+    const purchaseCategories = userBehavior.purchases.reduce((acc, p) => {
+      acc[p.category] = (acc[p.category] || 0) + (p.quantity || 1);
+      return acc;
+    }, {} as Record<string, number>);
+
+    const purchasedProductIds = new Set(userBehavior.purchases.map(p => p.product_id));
+
     const userPrompt = hasUserData
-      ? `User Behavior Analysis:
-- Recently Viewed: ${JSON.stringify(userBehavior.browsingHistory.slice(0, 10))}
-- Cart Activity: ${JSON.stringify(userBehavior.cartHistory.slice(0, 10))}
-- Past Purchases: ${JSON.stringify(userBehavior.purchases.slice(0, 10))}
-- Product Ratings: ${JSON.stringify(userBehavior.ratings)}
+      ? `USER ORDER HISTORY (PRIMARY DATA - USE THIS FOR RECOMMENDATIONS):
+${JSON.stringify(userBehavior.purchases, null, 2)}
+
+Order Category Summary: ${JSON.stringify(purchaseCategories)}
+Products Already Purchased: ${Array.from(purchasedProductIds).join(', ')}
+
+Secondary Signals:
+- Cart Activity: ${JSON.stringify(userBehavior.cartHistory.slice(0, 5))}
+- Browsing: ${JSON.stringify(userBehavior.browsingHistory.slice(0, 5))}
+- Ratings: ${JSON.stringify(userBehavior.ratings)}
+
+Product Catalog:
+${JSON.stringify(productsCatalog.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price, isVegan: p.isVegan, isOrganic: p.isOrganic })))}
+
+INSTRUCTIONS:
+1. Analyze the user's ORDER HISTORY to understand their preferences
+2. Recommend products they're likely to REORDER or products that COMPLEMENT their orders
+3. Prioritize categories they order from frequently: ${Object.entries(purchaseCategories).sort((a, b) => b[1] - a[1]).map(([cat, count]) => `${cat}(${count})`).join(', ')}
+4. You CAN recommend products they've ordered before (for replenishment)
+5. Also suggest NEW products that match their taste profile`
+      : `New User - Cold Start Scenario (No Order History)
 
 Product Catalog:
 ${JSON.stringify(productsCatalog.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price, isVegan: p.isVegan, isOrganic: p.isOrganic })))}
 
 Popular Products: ${JSON.stringify(popularProducts || [])}
 
-Based on this user's behavior, recommend 6 personalized products. Prioritize:
-1. Products in categories they frequently browse/purchase
-2. Products with attributes they prefer (organic, vegan, etc.)
-3. Complementary products to their purchases
-4. Trending items in their preferred categories`
-      : `New User - Cold Start Scenario
-
-Product Catalog:
-${JSON.stringify(productsCatalog.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price, isVegan: p.isVegan, isOrganic: p.isOrganic })))}
-
-Popular Products: ${JSON.stringify(popularProducts || [])}
-
-For this new user with no history, recommend 6 products based on:
+For this new user with no order history, recommend 6 products based on:
 1. Overall popularity trends
-2. High-value/quality products across categories
-3. Seasonal or promotional items
+2. Essential grocery staples across categories
+3. Best-value products
 4. Diverse category representation`;
 
     if (!lovableApiKey) {
