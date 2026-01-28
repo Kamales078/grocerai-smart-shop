@@ -7,13 +7,21 @@ export interface Recommendation {
   product: Product;
   confidence_score: number;
   reasoning: string;
-  recommendation_type: 'collaborative' | 'content_based' | 'popularity' | 'trending';
+  recommendation_type: 'collaborative' | 'content_based' | 'popularity' | 'trending' | 'replenishment' | 'association' | 'category';
+}
+
+interface AnalysisData {
+  totalOrders?: number;
+  frequentProducts?: number;
+  topCategories?: string[];
+  message?: string;
 }
 
 interface RecommendationsResponse {
   recommendations: Recommendation[];
   source: 'personalized' | 'cold_start' | 'fallback';
   user_id?: string;
+  analysis?: AnalysisData;
 }
 
 export function useRecommendations() {
@@ -21,6 +29,7 @@ export function useRecommendations() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<string>('');
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const { user } = useAuth();
 
   const fetchRecommendations = useCallback(async () => {
@@ -43,6 +52,7 @@ export function useRecommendations() {
       if (response.data) {
         setRecommendations(response.data.recommendations || []);
         setSource(response.data.source || 'unknown');
+        setAnalysis(response.data.analysis || null);
       }
     } catch (err) {
       console.error('Recommendations error:', err);
@@ -61,6 +71,7 @@ export function useRecommendations() {
     isLoading,
     error,
     source,
+    analysis,
     refetch: fetchRecommendations,
   };
 }

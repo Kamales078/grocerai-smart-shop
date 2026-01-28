@@ -24,6 +24,9 @@ const typeIcons: Record<string, typeof Sparkles> = {
   content_based: Target,
   popularity: TrendingUp,
   trending: Sparkles,
+  replenishment: RefreshCw,
+  association: Users,
+  category: Target,
 };
 
 const typeLabels: Record<string, string> = {
@@ -31,6 +34,9 @@ const typeLabels: Record<string, string> = {
   content_based: 'Based on your preferences',
   popularity: 'Popular choice',
   trending: 'Trending now',
+  replenishment: 'You order this often',
+  association: 'Frequently bought together',
+  category: 'From your favorite category',
 };
 
 export function RecommendedProducts() {
