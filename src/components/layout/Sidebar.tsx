@@ -9,11 +9,13 @@ import {
   LayoutDashboard,
   LogOut,
   Leaf,
+  History,
 } from 'lucide-react';
 
 const menuItems = {
   customer: [
     { icon: ShoppingCart, label: 'Shop', path: '/shop' },
+    { icon: History, label: 'Order History', path: '/orders' },
     { icon: ListChecks, label: 'Shopping List', path: '/shopping-list' },
   ],
   store_owner: [
